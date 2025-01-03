@@ -3,7 +3,8 @@
 	"package": "dev.rebel.chatmate.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
+		"ExampleMixin",
+		"TextFieldWidgetAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

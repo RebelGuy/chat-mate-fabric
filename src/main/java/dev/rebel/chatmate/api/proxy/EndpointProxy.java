@@ -174,7 +174,6 @@ public class EndpointProxy {
 
       requestBuilder.header("Content-Type", "application/json");
       requestBuilder.header("charset", "utf-8");
-      requestBuilder.header("Content-Length", String.valueOf(input.length));
       requestBuilder.method(method.toString(), HttpRequest.BodyPublishers.ofByteArray(input));
     }
 

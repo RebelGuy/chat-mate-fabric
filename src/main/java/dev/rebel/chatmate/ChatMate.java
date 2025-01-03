@@ -15,20 +15,25 @@ import dev.rebel.chatmate.util.FileHelpers;
 import dev.rebel.chatmate.util.Objects;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.TitleScreen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ChatMate implements ModInitializer {
 	public static final String MOD_ID = "chat-mate-fabric";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static ChatMate INSTANCE = null;
 
-	private ChatMateChatService chatMateChatService;
-	private Config config;
-	private AccountEndpointProxy accountEndpointProxy;
+	public ChatMateChatService chatMateChatService;
+	public Config config;
+	public AccountEndpointProxy accountEndpointProxy;
 
 	@Override
 	public void onInitialize() {
+		INSTANCE = this;
+
 		try {
 			this.initialise();
 		} catch (Exception e) {

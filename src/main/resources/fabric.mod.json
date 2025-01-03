@@ -17,7 +17,8 @@
 	"entrypoints": {
 		"main": [
 			"dev.rebel.chatmate.ChatMate"
-		]
+		],
+		"modmenu": ["dev.rebel.chatmate.ChatMateModMenu"]
 	},
 	"mixins": [
 		"chat-mate-fabric.mixins.json"
