@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "chat-mate-fabric",
+	"version": "${version}",
+	"name": "ChatMate",
+	"description": "Livestream helper tool",
+	"authors": [
+		"Rebel_Guy"
+	],
+	"contact": {
+		"homepage": "https://chat-mate.com/",
+		"sources": "https://github.com/RebelGuy/chat-mate"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/chat-mate-fabric/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"dev.rebel.chatmate.ChatMate"
+		]
+	},
+	"mixins": [
+		"chat-mate-fabric.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.9",
+		"minecraft": "~1.21.3",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
