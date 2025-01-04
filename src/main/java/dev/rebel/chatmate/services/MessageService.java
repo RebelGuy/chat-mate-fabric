@@ -273,6 +273,19 @@ public class MessageService {
     return joinComponents("", list);
   }
 
+  public Text getDonationMessage(String titleName, String titleRemaining, String donationMessage) {
+    Style donationMessageStyle = donationMessage.isEmpty() ? INFO_SUBTLE_MSG_STYLE.get(): INFO_MSG_STYLE.get();
+    donationMessage = donationMessage.isEmpty() ? "No message provided." : donationMessage;
+
+    List<Text> list = new ArrayList<>();
+    list.add(INFO_PREFIX);
+    list.add(styledText(titleName, VIEWER_NAME_STYLE.get().withBold(true)));
+    list.add(styledText(titleRemaining, HIGHLIGHT_MSG_STYLE.get()));
+    list.add(styledText(donationMessage, donationMessageStyle));
+
+    return joinComponents(" ", list);
+  }
+
   private Text getLargeLevelUpIntro(PublicUser user, int newLevel) {
     return pickRandom(INFO_MSG_STYLE.get(),
         "My little rebels... I have news for you.",

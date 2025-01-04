@@ -71,6 +71,7 @@ public class McChatService {
     this.chatMateEventService.onNewViewer(this::onNewViewer);
     this.chatMateEventService.onChatMessageDeleted(this::onChatMessageDeleted);
     this.chatMateEventService.onRankUpdated(this::onRankUpdated);
+    this.chatMateEventService.onDonation(this::onDonation); // todo: remove and bring back the donation carrd
     this.config.getShowChatPlatformIconEmitter().onChange(_value -> this.minecraftProxyService.refreshChat());
 
     chatMateChatService.onNewChat(newChat -> {
@@ -258,6 +259,28 @@ public class McChatService {
 
     } catch (Exception e) {
       this.logService.logError(this, String.format("Could not print rank updated message for '%s'", data.user.getDisplayName()));
+    }
+  }
+
+  private void onDonation(Event<DonationEventData> event) {
+    this.soundService.playDragonKill(1);
+
+    DonationEventData data = event.getData();
+    String titleName = data.donation.linkedUser != null ? data.donation.linkedUser.getDisplayName() : data.donation.name;
+    String titleRemaining = String.format("has donated %s!", data.donation.formattedAmount);
+    String donationMessage = "";
+    for (PublicMessagePart part : data.donation.messageParts) {
+      if (part.textData != null) {
+        donationMessage += part.textData.text;
+      }
+    }
+
+    try {
+      Text message = this.messageService.getDonationMessage(titleName, titleRemaining, donationMessage);
+      this.minecraftProxyService.printChatMessage("Received donation", message);
+
+    } catch (Exception e) {
+      this.logService.logError(this, String.format("Could not print donation message for '%s'", titleName));
     }
   }
 
