@@ -55,6 +55,8 @@ public class ApiRequestService {
 
     if (username == null || streamers == null) {
       return null;
+    } else if (streamers.isEmpty()) {
+      return username;
     }
 
     return dev.rebel.chatmate.util.Collections.any(streamers, streamer -> Objects.equals(streamer.username, username)) ? username : null;

@@ -139,29 +139,33 @@ public class ChatMate implements ModInitializer {
 		});
 
 		// disable ChatMate when logging out, since we hide the checkbox UI to do this manually
-		config.getLoginInfoEmitter().onChange(e -> {
-			if (e.getData().username == null) {
-				config.getChatMateEnabledEmitter().set(false);
-			}
-		});
+//		config.getLoginInfoEmitter().onChange(e -> {
+//			if (e.getData().username == null) {
+//				config.getChatMateEnabledEmitter().set(false);
+//			}
+//		});
 
 		// to make our life easier, auto enable when in a dev environment or if a livestream is running
-		if (IS_DEV) {
-			config.getChatMateEnabledEmitter().set(true);
-		} else if (config.getLoginInfoEmitter().get().username != null) {
-			streamerEndpointProxy.getStreamersAsync(streamerRes -> {
+//		if (IS_DEV) {
+//			config.getChatMateEnabledEmitter().set(true);
+//		} else if (config.getLoginInfoEmitter().get().username != null) {
+//			streamerEndpointProxy.getStreamersAsync(streamerRes -> {
+//
+//				String username = config.getLoginInfoEmitter().get().username;
+//				@Nullable PublicStreamerSummary streamer = Collections.first(Collections.list(streamerRes.streamers), str -> java.util.Objects.equals(str.username, username));
+//				if (streamer != null && (streamer.isYoutubeLive() || streamer.isTwitchLive())) {
+//					logService.logInfo(this, "Auto-enabling ChatMate since the logged in user is a streamer that is currently live");
+//					config.getChatMateEnabledEmitter().set(true);
+//				}
+//
+//			}, streamerErr -> {
+//				logService.logError(this, "Unable to get streamer list during initialisation", streamerErr);
+//			}, false);
+//		}
 
-				String username = config.getLoginInfoEmitter().get().username;
-				@Nullable PublicStreamerSummary streamer = Collections.first(Collections.list(streamerRes.streamers), str -> java.util.Objects.equals(str.username, username));
-				if (streamer != null && (streamer.isYoutubeLive() || streamer.isTwitchLive())) {
-					logService.logInfo(this, "Auto-enabling ChatMate since the logged in user is a streamer that is currently live");
-					config.getChatMateEnabledEmitter().set(true);
-				}
-
-			}, streamerErr -> {
-				logService.logError(this, "Unable to get streamer list during initialisation", streamerErr);
-			}, false);
-		}
+		// todo: remove
+		// because we don't currently have a way of manually enabling/disabling chatmate, it will just be enabled permanently by default for now
+		config.getChatMateEnabledEmitter().set(true);
 	}
 
 	private void validateLoginDetails() {
