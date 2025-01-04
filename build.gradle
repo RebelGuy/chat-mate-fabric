@@ -62,7 +62,7 @@ dependencies {
 	implementation 'javax.websocket:javax.websocket-client-api:1.1'
 
 	// this must be added to fix runtime issues with the websocket library (classdef not found)
-	include 'org.glassfish.tyrus.bundles:tyrus-standalone-client:1.13'
+	implementation 'org.glassfish.tyrus.bundles:tyrus-standalone-client:1.13'
 
 	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 }

@@ -94,7 +94,7 @@ public class Config extends EventServiceBase<ConfigType> {
     this.chatMateEnabled = new StatefulEmitter<>(
         ConfigType.ENABLE_CHAT_MATE,
         Boolean.class,
-        false,
+        true,
         this::onUpdate
     );
     this.soundEnabled = new StatefulEmitter<>(
