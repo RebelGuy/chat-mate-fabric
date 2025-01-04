@@ -3,42 +3,57 @@ package dev.rebel.chatmate;
 import dev.rebel.chatmate.api.ChatMateApiException;
 import dev.rebel.chatmate.api.ChatMateWebsocketClient;
 import dev.rebel.chatmate.api.proxy.*;
+import dev.rebel.chatmate.api.publicObjects.streamer.PublicStreamerSummary;
 import dev.rebel.chatmate.config.Config;
 import dev.rebel.chatmate.config.ConfigPersistorService;
 import dev.rebel.chatmate.config.SerialisedConfig;
 import dev.rebel.chatmate.events.ChatMateChatService;
+import dev.rebel.chatmate.events.ChatMateEventService;
+import dev.rebel.chatmate.events.FabricEventService;
+import dev.rebel.chatmate.events.MinecraftChatEventService;
 import dev.rebel.chatmate.services.*;
 import dev.rebel.chatmate.services.FilterService.FilterFileParseResult;
 import dev.rebel.chatmate.stores.*;
 import dev.rebel.chatmate.util.ApiPollerFactory;
+import dev.rebel.chatmate.util.Collections;
 import dev.rebel.chatmate.util.FileHelpers;
 import dev.rebel.chatmate.util.Objects;
 import net.fabricmc.api.ModInitializer;
 
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.TitleScreen;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+
+import static dev.rebel.chatmate.util.Objects.firstNonNull;
 
 public class ChatMate implements ModInitializer {
 	public static final String MOD_ID = "chat-mate-fabric";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static ChatMate INSTANCE = null;
+	public static final boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();
 
 	public ChatMateChatService chatMateChatService;
 	public Config config;
 	public AccountEndpointProxy accountEndpointProxy;
+	public FabricEventService fabricEventService;
+	public MinecraftClient minecraft;
+	public McChatService mcChatService;
 
 	@Override
 	public void onInitialize() {
 		INSTANCE = this;
 
-		try {
-			this.initialise();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		MinecraftClient.getInstance().execute(() -> {
+			try {
+				this.initialise();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
 	}
 
 	private void initialise() throws Exception {
@@ -47,11 +62,13 @@ public class ChatMate implements ModInitializer {
 		FileService fileService = new FileService(dataDir);
 		LogService logService = new LogService(fileService);
 
-		MinecraftClient minecraft = MinecraftClient.getInstance();
+		this.minecraft = MinecraftClient.getInstance();
 
 		ConfigPersistorService configPersistorService = new ConfigPersistorService(SerialisedConfig.class, logService, fileService);
 		this.config = new Config(logService, configPersistorService);
 		logService.injectConfig(this.config);
+
+		this.fabricEventService = new FabricEventService(logService, this.minecraft);
 
 		String environmentPath = "/environment.yml";
 		Environment environment = Environment.parseEnvironmentFile(FileHelpers.readLines(environmentPath));
@@ -84,6 +101,67 @@ public class ChatMate implements ModInitializer {
 		ApiPollerFactory apiPollerFactory = new ApiPollerFactory(logService, config, streamerApiStore);
 		ChatMateWebsocketClient chatMateWebsocketClient = new ChatMateWebsocketClient(logService, environment, config);
 		this.chatMateChatService = new ChatMateChatService(logService, chatEndpointProxy, apiPollerFactory, config, dateTimeService, chatMateWebsocketClient);
+
+		MinecraftChatEventService minecraftChatEventService = new MinecraftChatEventService(logService);
+		MinecraftProxyService minecraftProxyService = new MinecraftProxyService(minecraft, logService, fabricEventService);
+		SoundService soundService = new SoundService(logService, minecraftProxyService, config);
+		ChatMateEventService chatMateEventService = new ChatMateEventService(logService, streamerEndpointProxy, apiPollerFactory, config, dateTimeService, chatMateWebsocketClient);
+		DonationService donationService = new DonationService(dateTimeService, donationApiStore, livestreamApiStore, rankApiStore, chatMateEventService);
+		MessageService messageService = new MessageService(logService, this.minecraft.textRenderer, null, donationService, rankApiStore, null, dateTimeService);
+
+		this.mcChatService = new McChatService(minecraftProxyService,
+				logService,
+				filterService,
+				soundService,
+				chatMateEventService,
+				messageService,
+				null,
+				config,
+				chatMateChatService,
+				this.minecraft.textRenderer,
+				minecraftChatEventService
+		);
+
+		apiRequestService.setGetStreamers(() -> firstNonNull(streamerApiStore.getData(), new ArrayList<>()));
+
+		config.getChatMateEnabledEmitter().onChange(e -> {
+			boolean enabled = e.getData();
+			if (enabled) {
+				String releaseLabel = "";
+				if (environment.env == Environment.Env.LOCAL) {
+					releaseLabel = "Local build ";
+				} else if (environment.env == Environment.Env.DEBUG) {
+					releaseLabel = "Sandbox build ";
+				}
+
+				mcChatService.printInfo(String.format("Enabled. %s%s", releaseLabel, environment.buildName));
+			}
+		});
+
+		// disable ChatMate when logging out, since we hide the checkbox UI to do this manually
+		config.getLoginInfoEmitter().onChange(e -> {
+			if (e.getData().username == null) {
+				config.getChatMateEnabledEmitter().set(false);
+			}
+		});
+
+		// to make our life easier, auto enable when in a dev environment or if a livestream is running
+		if (IS_DEV) {
+			config.getChatMateEnabledEmitter().set(true);
+		} else if (config.getLoginInfoEmitter().get().username != null) {
+			streamerEndpointProxy.getStreamersAsync(streamerRes -> {
+
+				String username = config.getLoginInfoEmitter().get().username;
+				@Nullable PublicStreamerSummary streamer = Collections.first(Collections.list(streamerRes.streamers), str -> java.util.Objects.equals(str.username, username));
+				if (streamer != null && (streamer.isYoutubeLive() || streamer.isTwitchLive())) {
+					logService.logInfo(this, "Auto-enabling ChatMate since the logged in user is a streamer that is currently live");
+					config.getChatMateEnabledEmitter().set(true);
+				}
+
+			}, streamerErr -> {
+				logService.logError(this, "Unable to get streamer list during initialisation", streamerErr);
+			}, false);
+		}
 	}
 
 	private void validateLoginDetails() {
