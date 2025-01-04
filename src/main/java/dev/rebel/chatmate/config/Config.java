@@ -194,7 +194,7 @@ public class Config extends EventServiceBase<ConfigType> {
     this.loginInfo = new StatefulEmitter<>(
         ConfigType.LOGIN_INFO,
         LoginInfo.class,
-        data == null ? new LoginInfo("rebel_guy", null, "uSgoy9A7") : data.loginInfo.deserialise(),
+        data == null ? new LoginInfo(null, null, null) : data.loginInfo.deserialise(),
         this::onUpdate
     );
     this.chatMentionFilter = new StatefulEmitter<>(
