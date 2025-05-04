@@ -114,10 +114,10 @@ public class ChatMateSettingsScreen extends Screen {
       error = "You are not logged in.";
     }
     if (error != null) {
-      context.drawTextWrapped(super.textRenderer, Text.literal(error), 20, paddingTop + inputHeight + paddingBetweenY + buttonHeight + paddingBetweenY, super.width - 20 - 20, 0xFF0000);
+      context.drawWrappedText(super.textRenderer, Text.literal(error), 20, paddingTop + inputHeight + paddingBetweenY + buttonHeight + paddingBetweenY, super.width - 20 - 20, 0xFF0000, false);
     } else if (isLoggedIn) {
       String displayName = this.config.getLoginInfoEmitter().get().getDisplayName();
-      context.drawTextWrapped(super.textRenderer, Text.literal("Logged in as " + displayName), 20, paddingTop + inputHeight + paddingBetweenY + buttonHeight + paddingBetweenY, super.width - 20 - 20, 0x00FF00);
+      context.drawWrappedText(super.textRenderer, Text.literal("Logged in as " + displayName), 20, paddingTop + inputHeight + paddingBetweenY + buttonHeight + paddingBetweenY, super.width - 20 - 20, 0x00FF00, false);
     }
   }
 
