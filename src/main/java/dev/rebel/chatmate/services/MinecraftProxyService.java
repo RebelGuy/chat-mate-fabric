@@ -97,8 +97,11 @@ public class MinecraftProxyService {
         Text text = chatItem._2;
         String error = null;
         try {
-          MinecraftClient.getInstance().execute(() -> {
-            this.minecraft.inGameHud.getChatHud().addMessage(text);
+          MinecraftClient client = MinecraftClient.getInstance();
+          client.execute(() -> {
+            if (client.player != null) {
+              client.player.sendMessage(text, false);
+            }
           });
         } catch (Exception e) {
           error = e.getMessage();
