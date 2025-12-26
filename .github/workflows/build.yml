@@ -16,6 +16,7 @@ jobs:
         ]
     runs-on: ubuntu-22.04
     steps:
+      - run: echo "ref=${{ github.ref }} ref_name=${{ github.ref_name }}"
       - name: checkout repository
         uses: actions/checkout@v4
       - name: validate gradle wrapper
