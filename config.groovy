@@ -2,7 +2,7 @@
 environments {
     local {
         ENVIRONMENT = 'local'
-        SERVER_URL = 'http://localhost:3010'
+        SERVER_URL = 'https://server.chat-mate.com'
         STUDIO_URL = 'http://localhost:3000'
     }
 
@@ -14,7 +14,7 @@ environments {
 
     release {
         ENVIRONMENT = 'release'
-        SERVER_URL = 'http://chat-mate-prod.azurewebsites.net'
+        SERVER_URL = 'https://server.chat-mate.com'
         STUDIO_URL = 'https://www.chat-mate.com'
     }
 }
