@@ -10,6 +10,7 @@ import dev.rebel.chatmate.services.ApiRequestService;
 import dev.rebel.chatmate.services.LogService;
 import dev.rebel.chatmate.util.Objects;
 import dev.rebel.chatmate.util.RequestBackoff;
+import net.minecraft.client.MinecraftClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.ConnectException;
@@ -98,14 +99,14 @@ public class EndpointProxy {
           backoff.onError(e);
           onComplete.run();
           if (errorHandler != null) {
-            errorHandler.accept(e);
+            MinecraftClient.getInstance().execute(() -> errorHandler.accept(e));
           }
           return null;
         }
       }).thenAccept(res -> {
         if (res != null) {
           // if there is an exception here, it will bubble up
-          callback.accept(res);
+          MinecraftClient.getInstance().execute(() -> callback.accept(res));
         }
       });
     });
